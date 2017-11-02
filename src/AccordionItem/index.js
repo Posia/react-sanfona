@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import uuid from 'uuid';
 
+import { arrayify } from '../Accordion/utils';
 import AccordionItemBody from '../AccordionItemBody';
 import AccordionItemTitle from '../AccordionItemTitle';
 
@@ -136,6 +137,23 @@ export default class AccordionItem extends Component {
     }
   }
 
+  propagateMaxHeight() {
+    const children = this.props.children;
+    const childrenProps = children && arrayify(children).filter(c => c).map(child => child.props);
+    
+    if (!childrenProps) {
+      return;
+    }
+
+    if (childrenProps.some(prop => String(prop.className).includes('nested-accordion'))) {
+      this.setState({
+        maxHeight: 'none'
+      });
+
+      setTimeout(() => this.setMaxHeight(), this.props.duration);
+    }
+  }
+
   getProps() {
     const {
       className,
@@ -161,7 +179,9 @@ export default class AccordionItem extends Component {
           [disabledClassName]: disabled
         }
       ),
-      style
+      role: 'tabpanel',
+      style,
+      onClick: this.propagateMaxHeight.bind(this)
     };
 
     return props;
@@ -217,7 +237,8 @@ export default class AccordionItem extends Component {
 AccordionItem.defaultProps = {
   rootTag: 'div',
   titleTag: 'h3',
-  bodyTag: 'div'
+  bodyTag: 'div',
+  duration: 300
 };
 
 AccordionItem.propTypes = {
