@@ -216,7 +216,9 @@ var AccordionItem = function (_Component) {
         });
 
         setTimeout(function () {
-          return _this4.setMaxHeight();
+          if (_this4.refs.body) {
+            _this4.setMaxHeight();
+          }
         }, this.props.duration);
       }
     }

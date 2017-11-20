@@ -151,7 +151,11 @@ export default class AccordionItem extends Component {
         maxHeight: 'none'
       });
 
-      setTimeout(() => this.setMaxHeight(), this.props.duration);
+      setTimeout(() => {
+        if (this.refs.body) {
+          this.setMaxHeight();
+        }
+      }, this.props.duration);
     }
   }
 
