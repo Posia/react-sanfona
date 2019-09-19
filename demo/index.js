@@ -55,14 +55,26 @@ class Demo extends React.Component {
                 title={`Item ${item}`}
                 expanded={this.state.activeClickedItems.includes(item)}
               >
-                <div>
-                  {`Item ${item} content`}
-                  {item === 3 ? (
-                    <p>
-                      <img src="https://cloud.githubusercontent.com/assets/38787/8015584/2883817e-0bda-11e5-9662-b7daf40e8c27.gif" />
-                    </p>
-                  ) : null}
-                </div>
+                <Accordion>
+                  {[0, 1, 2, 3, 4, 5, 6, 7].map(n => {
+                    return (
+                      <AccordionItem
+                        key={`${item}`}
+                        title={`Item ${item}-${n}-xxxx`}
+                        // expanded={this.state.activeClickedItems.includes(item)}
+                      >
+                        <div>
+                          {`Item ${n} content`}
+                          {n === 3 ? (
+                            <p>
+                              <img src="https://cloud.githubusercontent.com/assets/38787/8015584/2883817e-0bda-11e5-9662-b7daf40e8c27.gif" />
+                            </p>
+                          ) : null}
+                        </div>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
               </AccordionItem>
             );
           })}
@@ -84,132 +96,138 @@ class Demo extends React.Component {
           })}
         </div>
 
-        <h2>Hovered</h2>
+        {true && (
+          <>
+            <h2>Hovered</h2>
 
-        <Accordion onChange={this.handleHover} isHovered>
-          {[0, 1, 2, 3, 4].map(item => {
-            return (
-              <AccordionItem
-                key={item}
-                title={`Item ${item}`}
-                expanded={this.state.activeHoveredItems.includes(item)}
-              >
-                <div>
-                  {`Item ${item} content`}
-                  {item === 2 ? (
-                    <p>
-                      <img src="https://cloud.githubusercontent.com/assets/38787/8015584/2883817e-0bda-11e5-9662-b7daf40e8c27.gif" />
-                    </p>
-                  ) : null}
-                </div>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+            <Accordion onChange={this.handleHover} isHovered>
+              {[0, 1, 2, 3, 4].map(item => {
+                return (
+                  <AccordionItem
+                    key={`${item}`}
+                    title={`Item ${item}`}
+                    expanded={this.state.activeHoveredItems.includes(item)}
+                  >
+                    <div>
+                      {`Item ${item} content`}
+                      {item === 2 ? (
+                        <p>
+                          <img src="https://cloud.githubusercontent.com/assets/38787/8015584/2883817e-0bda-11e5-9662-b7daf40e8c27.gif" />
+                        </p>
+                      ) : null}
+                    </div>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
 
-        <h2>Allow multiple</h2>
+            <h2>Allow multiple</h2>
 
-        <Accordion allowMultiple>
-          {[0, 1, 2, 3, 4].map(item => {
-            return (
-              <AccordionItem
-                duration={item === 3 ? 700 : null}
-                easing={
-                  item === 3 ? 'cubic-bezier(0.420, 0.000, 0.580, 1.000)' : null
-                }
-                key={item}
-                title={`Item ${item}`}
-                expanded={item === 2}
-              >
-                <div>
-                  {`Item ${item} content`}
-                  {item === 3 ? (
-                    <p>
-                      <img src="https://i.giphy.com/nIMpbXH2WfYRi.gif" />
-                    </p>
-                  ) : null}
-                </div>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+            <Accordion allowMultiple>
+              {[0, 1, 2, 3, 4].map(item => {
+                return (
+                  <AccordionItem
+                    duration={item === 3 ? 700 : null}
+                    easing={
+                      item === 3
+                        ? 'cubic-bezier(0.420, 0.000, 0.580, 1.000)'
+                        : null
+                    }
+                    key={item}
+                    title={`Item ${item}`}
+                    expanded={item === 2}
+                  >
+                    <div>
+                      {`Item ${item} content`}
+                      {item === 3 ? (
+                        <p>
+                          <img src="https://i.giphy.com/nIMpbXH2WfYRi.gif" />
+                        </p>
+                      ) : null}
+                    </div>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
 
-        <h2>Allow multiple, all active</h2>
+            <h2>Allow multiple, all active</h2>
 
-        <Accordion allowMultiple>
-          {[0, 1, 2, 3, 4].map(item => {
-            return (
-              <AccordionItem key={item} title={`Item ${item}`} expanded>
-                <div>
-                  {`Item ${item} content`}
-                  {item === 3 ? (
-                    <p>
-                      <img src="https://i.giphy.com/nIMpbXH2WfYRi.gif" />
-                    </p>
-                  ) : null}
-                </div>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+            <Accordion allowMultiple>
+              {[0, 1, 2, 3, 4].map(item => {
+                return (
+                  <AccordionItem key={item} title={`Item ${item}`} expanded>
+                    <div>
+                      {`Item ${item} content`}
+                      {item === 3 ? (
+                        <p>
+                          <img src="https://i.giphy.com/nIMpbXH2WfYRi.gif" />
+                        </p>
+                      ) : null}
+                    </div>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
 
-        <h2>Open next accordion item when previous one closes</h2>
+            <h2>Open next accordion item when previous one closes</h2>
 
-        <Accordion openNextAccordionItem>
-          {[0, 1, 2, 3, 4].map(item => {
-            return (
-              <AccordionItem key={item} title={`Item ${item}`}>
-                <div>
-                  {`Item ${item} content`}
-                  {item === 3 ? (
-                    <p>
-                      <img src="https://i.giphy.com/nIMpbXH2WfYRi.gif" />
-                    </p>
-                  ) : null}
-                </div>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+            <Accordion openNextAccordionItem>
+              {[0, 1, 2, 3, 4].map(item => {
+                return (
+                  <AccordionItem key={item} title={`Item ${item}`}>
+                    <div>
+                      {`Item ${item} content`}
+                      {item === 3 ? (
+                        <p>
+                          <img src="https://i.giphy.com/nIMpbXH2WfYRi.gif" />
+                        </p>
+                      ) : null}
+                    </div>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
 
-        <h2>Overflow example</h2>
+            <h2>Overflow example</h2>
 
-        <Accordion>
-          {[0, 1].map(item => {
-            return (
-              <AccordionItem key={item} title={`Item ${item}`}>
-                <div>
-                  {`Item ${item} content`}
-                  <div className="tooltip">{`Tooltip ${item} content`}</div>
-                </div>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+            <Accordion>
+              {[0, 1].map(item => {
+                return (
+                  <AccordionItem key={item} title={`Item ${item}`}>
+                    <div>
+                      {`Item ${item} content`}
+                      <div className="tooltip">{`Tooltip ${item} content`}</div>
+                    </div>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
 
-        <h2>onChange example</h2>
+            <h2>onChange example</h2>
 
-        <p id="changes" />
-        <Accordion
-          allowMultiple
-          onChange={newState =>
-            (document.getElementById('changes').innerHTML = `Active: ${
-              newState.activeItems
-            }`)
-          }
-        >
-          {[0, 1, 2, 3, 4].map(item => {
-            return (
-              <AccordionItem
-                key={item}
-                title={`Item ${item}`}
-                expanded={item === 2}
-              >
-                <div>{`Item ${item} content`}</div>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+            <p id="changes" />
+            <Accordion
+              allowMultiple
+              onChange={newState =>
+                (document.getElementById('changes').innerHTML = `Active: ${
+                  newState.activeItems
+                }`)
+              }
+            >
+              {[0, 1, 2, 3, 4].map(item => {
+                return (
+                  <AccordionItem
+                    key={item}
+                    title={`Item ${item}`}
+                    expanded={item === 2}
+                  >
+                    <div>{`Item ${item} content`}</div>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
+          </>
+        )}
       </div>
     );
   }

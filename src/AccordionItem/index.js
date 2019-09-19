@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import uuid from 'uuid';
 
-import { arrayify } from '../Accordion/utils';
+import { Animation, getChildrenHeight } from './util';
 import AccordionItemBody from '../AccordionItemBody';
 import AccordionItemTitle from '../AccordionItemTitle';
 
@@ -14,21 +14,20 @@ export default class AccordionItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      maxHeight: props.expanded ? 'none' : 0,
-      overflow: props.expanded ? 'visible' : 'hidden'
+      height: props.expanded ? 'none' : 0,
+      opacity: props.expanded ? 1 : 0,
+      expanded: props.expanded
     };
   }
 
   componentWillMount() {
     this.uuid = this.props.uuid || uuid.v4();
+    this.animation = new Animation(this.props.duration);
   }
 
   componentDidMount() {
-    this.setMaxHeight(false);
-  }
-
-  componentWillUnmount() {
-    clearTimeout(this.timeout);
+    this.addAnimationHandlers();
+    this.handleHeightChange();
   }
 
   componentDidUpdate(prevProps) {
@@ -43,14 +42,48 @@ export default class AccordionItem extends Component {
         this.handleCollapse();
       }
     } else if (prevProps.children !== children) {
-      this.setMaxHeight(false);
+      this.handleHeightChange();
     }
+  }
+
+  addAnimationHandlers() {
+    const { onAfterExpand, onAfterCollapse } = this.props;
+    const bodyNode = this.getBodyNode();
+
+    this.animation.addExpandHandler(progress => {
+      const childrenHeight = getChildrenHeight(bodyNode);
+      const actualHeight = (childrenHeight / 100) * progress.percents;
+
+      this.setState({
+        height: progress.inProgress ? actualHeight : 'auto',
+        opacity: progress.percents / 100
+      });
+    });
+
+    this.animation.addCollapseHandler(progress => {
+      const childrenHeight = getChildrenHeight(bodyNode);
+      const actualHeight =
+        childrenHeight - (childrenHeight / 100) * progress.percents;
+
+      this.setState({
+        height: actualHeight,
+        opacity: 1 - progress.percents / 100
+      });
+    });
+
+    this.animation.addAfterCollapseHandler(() => {
+      if (onAfterCollapse) onAfterCollapse();
+    });
+
+    this.animation.addAfterExpandHandler(() => {
+      if (onAfterExpand) onAfterExpand();
+    });
   }
 
   handleExpand() {
     const { index, onExpand, slug } = this.props;
 
-    this.setMaxHeight(false);
+    this.handleHeightChange();
 
     if (onExpand) {
       slug ? onExpand(slug, index) : onExpand(index);
@@ -60,102 +93,33 @@ export default class AccordionItem extends Component {
   handleCollapse() {
     const { index, onClose, slug } = this.props;
 
-    this.setMaxHeight(true);
+    this.handleHeightChange();
 
     if (onClose) {
       slug ? onClose(slug, index) : onClose(index);
     }
   }
 
-  setMaxHeight(collapse) {
-    const { duration, expanded } = this.props;
-
-    clearTimeout(this.timeout);
-
-    const bodyNode = ReactDOM.findDOMNode(this.refs.body);
-    const images = bodyNode.querySelectorAll('img');
-
-    if (images.length > 0) {
-      return this.preloadImages(bodyNode, images);
-    }
-
-    this.setState({
-      maxHeight: expanded || collapse ? bodyNode.scrollHeight + 'px' : 0,
-      overflow: 'hidden'
-    });
-
-    if (expanded) {
-      this.timeout = setTimeout(() => {
-        this.setState({
-          maxHeight: 'none',
-          overflow: 'visible'
-        });
-      }, duration);
-    } else {
-      this.timeout = setTimeout(() => {
-        this.setState({
-          maxHeight: 0
-        });
-      }, 0);
-    }
+  getBodyNode() {
+    return ReactDOM.findDOMNode(this.refs.body);
   }
 
-  // Wait for images to load before calculating maxHeight
-  preloadImages(node, images = []) {
-    const { duration, expanded } = this.props;
+  handleHeightChange() {
+    const { expanded } = this.props;
 
-    let imagesLoaded = 0;
-
-    const imgLoaded = () => {
-      imagesLoaded++;
-
-      if (imagesLoaded === images.length && this.refs.item) {
-        if (expanded) {
-          this.setState({
-            maxHeight: `${node.scrollHeight}px`,
-            overflow: 'hidden'
-          });
-
-          // wait for animation
-          setTimeout(() => {
-            this.setState({
-              overflow: 'visible'
-            });
-          }, duration);
-        } else {
-          this.setState({
-            maxHeight: 0,
-            overflow: 'hidden'
-          });
-        }
-      }
-    };
-
-    for (let i = 0; i < images.length; i += 1) {
-      let img = new Image();
-      img.src = images[i].src;
-      img.onload = img.onerror = imgLoaded;
-    }
-  }
-
-  propagateMaxHeight() {
-    const children = this.props.children;
-    const childrenProps = children && arrayify(children).filter(c => c).map(child => child.props);
-    
-    if (!childrenProps) {
+    if (this.state.expanded === expanded) {
       return;
     }
+    this.setState({ expanded });
+    this.handleAnimationChange();
+  }
 
-    if (childrenProps.some(prop => String(prop.className).includes('nested-accordion'))) {
-      this.setState({
-        maxHeight: 'none'
-      });
-
-      setTimeout(() => {
-        if (this.refs.body) {
-          this.setMaxHeight();
-        }
-      }, this.props.duration);
+  handleAnimationChange() {
+    const { expanded } = this.props;
+    if (expanded) {
+      this.animation.expand();
+    } else {
+      this.animation.collapse();
     }
   }
 
@@ -185,8 +149,7 @@ export default class AccordionItem extends Component {
         }
       ),
       role: 'tabpanel',
-      style,
-      onClick: this.propagateMaxHeight.bind(this)
+      style
     };
 
     return props;
@@ -198,8 +161,6 @@ export default class AccordionItem extends Component {
       bodyTag,
       children,
       disabled,
-      duration,
-      easing,
       onClick,
       onMouseOver,
       rootTag: Root,
@@ -208,7 +169,7 @@ export default class AccordionItem extends Component {
       titleTag
     } = this.props;
 
-    const { maxHeight, overflow } = this.state;
+    const { height, opacity } = this.state;
 
     return (
       <Root {...this.getProps()} ref="item">
@@ -223,11 +184,9 @@ export default class AccordionItem extends Component {
         />
         <AccordionItemBody
           className={bodyClassName}
-          duration={duration}
-          easing={easing}
           expanded={this.props.expanded}
-          maxHeight={maxHeight}
-          overflow={overflow}
+          opacity={opacity}
+          height={height}
           ref="body"
           rootTag={bodyTag}
           uuid={this.uuid}
@@ -242,8 +201,7 @@ export default class AccordionItem extends Component {
 AccordionItem.defaultProps = {
   rootTag: 'div',
   titleTag: 'h3',
-  bodyTag: 'div',
-  duration: 300
+  bodyTag: 'div'
 };
 
 AccordionItem.propTypes = {
@@ -266,6 +224,8 @@ AccordionItem.propTypes = {
   onClose: PropTypes.func,
   onExpand: PropTypes.func,
   onHover: PropTypes.func,
+  onAfterCollapse: PropTypes.func,
+  onAfterExpand: PropTypes.func,
   rootTag: PropTypes.string,
   slug: PropTypes.string,
   style: PropTypes.object,

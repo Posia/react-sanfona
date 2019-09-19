@@ -7,21 +7,23 @@ import PropTypes from 'prop-types';
 export default class AccordionItemBody extends Component {
   render() {
     const {
+      rootTag: Root,
       children,
       className,
-      duration,
-      easing,
       expanded,
-      maxHeight,
-      overflow,
-      rootTag: Root,
+      height,
+      opacity,
       uuid
     } = this.props;
 
-    const style = {
-      maxHeight,
-      overflow,
-      transition: `max-height ${duration}ms ${easing}`
+    const commonStyle = {
+      overflow: 'hidden'
+    };
+
+    const bodyStyle = {
+      ...commonStyle,
+      opacity,
+      height
     };
 
     return (
@@ -30,9 +32,11 @@ export default class AccordionItemBody extends Component {
         aria-labelledby={`react-sanfona-item-title-${uuid}`}
         className={cx('react-sanfona-item-body', className)}
         id={`react-sanfona-item-body-${uuid}`}
-        style={style}
+        style={bodyStyle}
       >
-        <div className="react-sanfona-item-body-wrapper">{children}</div>
+        <div className="react-sanfona-item-body-wrapper" style={commonStyle}>
+          {children}
+        </div>
       </Root>
     );
   }
@@ -48,11 +52,9 @@ AccordionItemBody.propTypes = {
     PropTypes.arrayOf(PropTypes.node),
     PropTypes.node
   ]),
-  duration: PropTypes.number,
-  easing: PropTypes.string,
   expanded: PropTypes.bool,
-  maxHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  overflow: PropTypes.string,
+  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  opacity: PropTypes.number,
   rootTag: PropTypes.string,
   uuid: PropTypes.string
 };

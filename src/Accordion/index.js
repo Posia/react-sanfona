@@ -70,7 +70,7 @@ export default class Accordion extends Component {
   }
 
   renderItems() {
-    const { children, duration, easing, isHovered } = this.props;
+    const { children, duration, isHovered } = this.props;
 
     if (!children) {
       return null;
@@ -81,14 +81,13 @@ export default class Accordion extends Component {
     return arrayify(children).reduce((acc, item, index) => {
       if (item) {
         const {
-          props: { disabled, duration: itemDuration, easing: itemEasing }
+          props: { disabled, duration: itemDuration }
         } = item;
 
         const isExpanded = !disabled && activeItems.indexOf(index) !== -1;
         const handleChange = this.handleChange.bind(this, index);
         const element = React.cloneElement(item, {
           duration: itemDuration || duration,
-          easing: itemEasing || easing,
           expanded: isExpanded,
           key: index,
           index,
@@ -116,8 +115,7 @@ export default class Accordion extends Component {
 Accordion.defaultProps = {
   activeItems: [0],
   allowMultiple: false,
-  duration: 300,
-  easing: 'ease',
+  duration: 200,
   rootTag: 'div'
 };
 
@@ -129,7 +127,6 @@ Accordion.propTypes = {
   ]),
   className: PropTypes.string,
   duration: PropTypes.number,
-  easing: PropTypes.string,
   onChange: PropTypes.func,
   isHovered: PropTypes.bool,
   openNextAccordionItem: PropTypes.bool,
